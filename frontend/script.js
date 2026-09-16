@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://localhost:8001";
 
 // ---------------------------------------------------------------------
 // Enroll
@@ -72,7 +72,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 // ---------------------------------------------------------------------
 // Live Microphone Monitoring
 // ---------------------------------------------------------------------
-const CHUNK_MS = 4000; // 4 seconds per chunk
+const CHUNK_MS = 4000;
 
 let liveStream = null;
 let liveRunning = false;
@@ -93,10 +93,10 @@ startLiveBtn.addEventListener("click", async () => {
   liveRunning = true;
   startLiveBtn.disabled = true;
   stopLiveBtn.disabled = false;
-  liveStatus.textContent = "Live monitoring started...";
+  liveStatus.textContent = "Live monitoring started (microphone)...";
   liveStatus.className = "status";
 
-  recordLoop();
+  micRecordLoop();
 });
 
 stopLiveBtn.addEventListener("click", () => {
@@ -106,10 +106,10 @@ stopLiveBtn.addEventListener("click", () => {
   }
   startLiveBtn.disabled = false;
   stopLiveBtn.disabled = true;
-  liveStatus.textContent = "Live monitoring stopped.";
+  liveStatus.textContent = "Microphone monitoring stopped.";
 });
 
-async function recordLoop() {
+async function micRecordLoop() {
   while (liveRunning) {
     const chunkBlob = await recordChunk(liveStream, CHUNK_MS);
     if (!liveRunning) break;
@@ -125,7 +125,7 @@ async function recordLoop() {
       const data = await res.json();
 
       renderResult(data);
-      liveStatus.textContent = "Listening...";
+      liveStatus.textContent = "Listening (microphone)...";
     } catch (err) {
       liveStatus.textContent = `Error analyzing chunk: ${err.message}`;
       liveStatus.className = "status error";
@@ -147,10 +147,103 @@ function recordChunk(stream, durationMs) {
 }
 
 // ---------------------------------------------------------------------
-// Shared result rendering (used by both file-upload and live analysis)
+// System Audio Loopback Monitoring
+// ---------------------------------------------------------------------
+let systemRunning = false;
+
+const startSystemBtn = document.getElementById("startSystemBtn");
+const stopSystemBtn = document.getElementById("stopSystemBtn");
+const systemStatus = document.getElementById("systemStatus");
+
+startSystemBtn.addEventListener("click", () => {
+  if (systemRunning) return;
+  systemRunning = true;
+  startSystemBtn.disabled = true;
+  stopSystemBtn.disabled = false;
+  systemStatus.textContent = "Monitoring system audio (e.g. call/Meet audio playing on this device)...";
+  systemStatus.className = "status";
+  systemLoop();
+});
+
+stopSystemBtn.addEventListener("click", () => {
+  systemRunning = false;
+  startSystemBtn.disabled = false;
+  stopSystemBtn.disabled = true;
+  systemStatus.textContent = "System audio monitoring stopped.";
+});
+
+async function systemLoop() {
+  while (systemRunning) {
+    systemStatus.textContent = "Recording & analyzing system audio chunk...";
+    try {
+      const res = await fetch(`${API_BASE}/analyze-system-audio`, { method: "POST" });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data = await res.json();
+
+      renderResult(data);
+      systemStatus.textContent = "Listening to system audio...";
+    } catch (err) {
+      systemStatus.textContent = `Error: ${err.message}`;
+      systemStatus.className = "status error";
+      break;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------
+// Auto-detect an active call and auto-start system audio monitoring
+// ---------------------------------------------------------------------
+async function pollCallStatus() {
+  setInterval(async () => {
+    if (systemRunning) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/call-status`);
+      if (!res.ok) return;
+      const status = await res.json();
+
+      if (status.likely_call_active) {
+        systemStatus.textContent = `Active call detected in ${status.detected_call_app} — auto-starting monitoring.`;
+        startSystemBtn.click();
+      }
+    } catch (err) {
+      // Silently ignore polling errors — background convenience only.
+    }
+  }, 5000);
+}
+
+pollCallStatus();
+
+// ---------------------------------------------------------------------
+// Risk Toast (floating popup for high-risk results)
+// ---------------------------------------------------------------------
+let toastTimeout = null;
+
+function showRiskToast(riskScore, riskLevel) {
+  const toast = document.getElementById("riskToast");
+  const toastText = document.getElementById("riskToastText");
+
+  if (riskScore < 75) return; // only pop up for genuinely high scores
+
+  toastText.textContent = `${riskLevel} — Risk Score ${riskScore}/100`;
+  toast.classList.remove("hidden");
+
+  void toast.offsetWidth; // force reflow so the transition re-triggers
+  toast.classList.add("show");
+
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.classList.add("hidden"), 300);
+  }, 5000);
+}
+
+// ---------------------------------------------------------------------
+// Shared result rendering (used by mic, upload, and system-audio modes)
 // ---------------------------------------------------------------------
 function renderResult(data) {
   document.getElementById("resultCard").classList.remove("hidden");
+  showRiskToast(data.risk_score, data.risk_level);
 
   document.getElementById("metricSynthetic").textContent =
     `${(data.synthetic_probability * 100).toFixed(1)}%`;

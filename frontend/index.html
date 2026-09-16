@@ -38,13 +38,20 @@
     </section>
 
     <section class="card">
-      <h2>3. Live Microphone Monitoring</h2>
-      <p class="hint">Records short chunks from your mic and analyzes each one — simulates real-time call monitoring.</p>
+      <h2>3. Live Monitoring</h2>
+      <p class="hint">Choose a mode: analyze your own microphone, or monitor system audio (e.g. a Zoom/Meet/WhatsApp call playing on this device).</p>
+
       <div class="live-controls">
-        <button id="startLiveBtn">Start Live Monitoring</button>
+        <button id="startLiveBtn">Start Live Monitoring (Mic)</button>
         <button id="stopLiveBtn" disabled>Stop Live Monitoring</button>
       </div>
       <p id="liveStatus" class="status"></p>
+
+      <div class="live-controls" style="margin-top: 14px;">
+        <button id="startSystemBtn">Start System Audio Monitoring</button>
+        <button id="stopSystemBtn" disabled>Stop System Audio Monitoring</button>
+      </div>
+      <p id="systemStatus" class="status"></p>
     </section>
 
     <section id="resultCard" class="card result-card hidden">
@@ -93,6 +100,11 @@
         <p id="transcriptText">—</p>
       </details>
     </section>
+  </div>
+
+  <div id="riskToast" class="toast hidden">
+    <span id="riskToastIcon">⚠️</span>
+    <span id="riskToastText">High risk detected</span>
   </div>
 
   <script src="script.js"></script>
