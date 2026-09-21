@@ -133,7 +133,7 @@ python -m streamlit run app.py
 
 ## Team
 
-Built for SIH 2026 by ByteX — @envie112 , @PARAS_RAJPUT ,@Prince
+Built for SIH 2026 by ByteX — @envie112 , @PARAS_RAJPUT ,@Prince, @Nitin_Chahar, @Gaurav_Cutie
 
 ## Tech stack
 
