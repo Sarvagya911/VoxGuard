@@ -12,7 +12,7 @@ score with a recommended action.
 ## Why this matters
 
 AI voice cloning has turned identity into an attack surface. A short audio
-sample is now enough to convincingly impersonate someone over a phone call
+sample is now enough to convincingly impersonate someone over a phone call.
 — enabling fraud, OTP theft, and social engineering that traditional
 caller-ID and voice checks cannot catch. VoxGuard is built to close that
 gap by never relying on a single signal.
