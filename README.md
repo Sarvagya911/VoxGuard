@@ -36,22 +36,22 @@ on its own; multiple weaker signals together can also escalate.
 
 VoxGuard/
 ├── backend/
-│ ├── audio_layers/ # Layer 1: synthetic voice detection (AASIST) +
-│ │ # system-audio loopback capture / call detection
-│ ├── speaker_id/ # Layer 2: speaker verification & watchlist matching
-│ ├── context_nlp/ # Layer 5: transcription + intent classification (Groq)
-│ ├── risk_engine/ # Fusion logic — combines all signals into a risk score
-│ ├── api/ # FastAPI backend — REST API for any frontend
-│ ├── app.py # Streamlit dashboard (internal testing / fallback UI)
-│ ├── data/ # Test audio samples
-│ └── .env # GROQ_API_KEY (not committed)
+│   ├── audio_layers/      # Layer 1: synthetic voice detection (AASIST)
+│   │                      #   + system-audio loopback capture / call detection
+│   ├── speaker_id/        # Layer 2: speaker verification & watchlist matching
+│   ├── context_nlp/       # Layer 5: transcription + intent classification (Groq)
+│   ├── risk_engine/       # Fusion logic: combines all signals into a risk score
+│   ├── api/               # FastAPI backend: REST API for any frontend
+│   ├── data/              # Test audio samples
+│   ├── app.py             # Streamlit dashboard (internal testing / fallback UI)
+│   └── .env               # GROQ_API_KEY (not committed)
 ├── frontend/
-│ ├── index.html # Dashboard UI
-│ ├── style.css
-│ └── script.js # Talks to the backend API, handles mic capture,
-│ # system-audio polling, and risk toast alerts
-├── requirements.txt
-├── API_CONTRACT.md # Full API spec for the frontend
+│   ├── index.html         # Dashboard UI
+│   ├── style.css          # Dashboard styling
+│   └── script.js          # Talks to the backend API; handles mic capture,
+│                          #   system-audio polling, and risk toast alerts
+├── API_CONTRACT.md        # Full API spec for the frontend
+├── requirements.txt       # Python dependencies
 └── README.md
 
 
